@@ -1,5 +1,10 @@
 Analyze the current project and generate todos for tomorrow.
 
+**Arguments:** $ARGUMENTS
+
+- Nếu `$ARGUMENTS` chứa `--send` hoặc `send`: Sau khi tạo todos, gửi luôn qua Telegram
+- Mặc định: Chỉ tạo todos, không gửi
+
 ## Instructions
 
 1. **Gather context** từ project hiện tại:
@@ -58,6 +63,12 @@ Analyze the current project and generate todos for tomorrow.
    - Hiển thị nội dung todos đã tạo
    - Show đường dẫn file
    - Confirm đã push lên GitHub
+
+6. **Send Telegram** (nếu có argument `--send` hoặc `send`):
+   - Copy file vừa tạo sang file ngày hôm nay (để script đọc được)
+   - Chạy: `source ~/Documents/Development/Automations/daily-todos/.env && TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID pnpm --dir ~/Documents/Development/Automations/daily-todos send`
+   - Xóa file copy tạm
+   - Confirm đã gửi Telegram
 
 ## Important Notes
 

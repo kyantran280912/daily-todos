@@ -114,6 +114,13 @@ function buildMessage(
 
   // Header
   sections.push(`📋 <b>Tasks hôm nay</b>`);
+
+  // Short IDs (if any)
+  if (shortIds.length > 0) {
+    const ids = shortIds.map((id) => `<code>#${id}</code>`).join(' ');
+    sections.push(`🔖 ${ids}`);
+  }
+
   sections.push(`🏷️ Project: <b>${escapeHtml(project)}</b>`);
   sections.push(`📅 ${date}`);
   sections.push('');
@@ -175,13 +182,6 @@ function buildMessage(
   } else {
     sections.push('');
     sections.push('💪 Good luck!');
-  }
-
-  // Short IDs for /check-todos
-  if (shortIds.length > 0) {
-    sections.push('');
-    const ids = shortIds.map((id) => `<code>#${id}</code>`).join(' ');
-    sections.push(`📎 Review: /check-todos ${ids}`);
   }
 
   return sections.join('\n');

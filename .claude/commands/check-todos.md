@@ -41,7 +41,14 @@ Review todos and check completion status.
    - 💡 **Suggestions**: Improvements or fixes needed
    - 📝 **Additional tasks**: New tasks discovered during review
 
-6. **Ask user** for next action:
+6. **Send review to Telegram**:
+   - Format review as clear, manager-style feedback
+   - Use HTML formatting for Telegram
+   - Include: ✅ Done / ⏳ In Progress / ❌ Not Done / 💡 Suggestions
+   - Run: `source ~/Documents/Development/Automations/daily-todos/.env && TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -H "Content-Type: application/json" -d '{"chat_id": "$TELEGRAM_CHAT_ID", "text": "{message}", "parse_mode": "HTML"}'`
+   - Confirm sent to user
+
+7. **Ask user** for next action:
    - Update todos file with completion status
    - Add new tasks to existing file
    - Create new todos file for additional work
@@ -58,6 +65,7 @@ When reviewing project against todos:
 
 ## Output format
 
+**Console output (for user):**
 ```markdown
 ## 📊 Todos Review: {project-name} #{id}
 
@@ -82,6 +90,39 @@ When reviewing project against todos:
 ### 📝 Additional Tasks Found
 - New task 1
 - New task 2
+```
+
+**Telegram message format:**
+```
+📊 <b>Review Report</b>
+🔖 <code>#{id}</code>
+🏷️ Project: <b>{project-name}</b>
+📅 {date}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ <b>Completed: X/Y tasks</b>
+• Task 1
+• Task 2
+
+⏳ <b>In Progress: X tasks</b>
+• Task 3 - Missing {detail}
+
+❌ <b>Not Started: X tasks</b>
+• Task 4
+• Task 5
+
+💡 <b>Suggestions:</b>
+• Issue: {description}
+• Improvement: {suggestion}
+
+📝 <b>Additional Tasks:</b>
+• New task 1
+• New task 2
+
+━━━━━━━━━━━━━━━━━━━━
+
+{Overall assessment from manager perspective}
 ```
 
 ## Important notes

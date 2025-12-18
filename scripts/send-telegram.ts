@@ -80,9 +80,16 @@ function parseTodoFile(content: string): ParsedTodos {
       continue;
     }
 
-    // Parse list items
+    // Parse list items (with checkbox support)
     if (trimmed.startsWith('- ') && currentSection) {
-      const item = trimmed.replace(/^-\s*/, '');
+      // Skip completed tasks (marked with [x] or [X])
+      if (trimmed.match(/^-\s*\[[xX]\]/)) {
+        continue;
+      }
+      // Remove checkbox prefix if present: "- [ ] task" -> "task"
+      const item = trimmed
+        .replace(/^-\s*/, '')
+        .replace(/^\[\s?\]\s*/, '');
       if (item) {
         result[currentSection].push(item);
       }

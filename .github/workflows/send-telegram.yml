@@ -2,8 +2,8 @@ name: Send Daily Todos
 
 on:
   schedule:
-    # 6:00 AM Vietnam time (UTC+7) = 23:00 UTC previous day
-    - cron: '0 23 * * *'
+    # 7:00 AM Vietnam time (UTC+7) = 00:00 UTC
+    - cron: '0 0 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:

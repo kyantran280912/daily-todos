@@ -42,6 +42,8 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
+type SectionKey = 'tasks' | 'meetings' | 'reminders' | 'blockers' | 'notes' | 'deadline';
+
 function parseTodoFile(content: string): ParsedTodos {
   const lines = content.split('\n');
   const result: ParsedTodos = {
@@ -54,7 +56,7 @@ function parseTodoFile(content: string): ParsedTodos {
     deadline: [],
   };
 
-  let currentSection = '';
+  let currentSection: SectionKey | null = null;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -74,6 +76,7 @@ function parseTodoFile(content: string): ParsedTodos {
       else if (section.includes('blocker')) currentSection = 'blockers';
       else if (section.includes('note')) currentSection = 'notes';
       else if (section.includes('deadline')) currentSection = 'deadline';
+      else currentSection = null;
       continue;
     }
 

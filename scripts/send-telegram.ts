@@ -226,8 +226,8 @@ async function sendTelegramMessage(text: string): Promise<boolean> {
 function findTodosForToday(
   projectsDir: string,
   today: string
-): Map<string, string> {
-  const todosMap = new Map<string, string>();
+): Map<string, string[]> {
+  const todosMap = new Map<string, string[]>();
 
   if (!existsSync(projectsDir)) {
     console.log('📁 Projects directory not found');
@@ -239,16 +239,25 @@ function findTodosForToday(
     .map((dirent) => dirent.name);
 
   for (const project of projects) {
-    const todoFile = join(projectsDir, project, `${today}.md`);
+    const projectDir = join(projectsDir, project);
+    const files = readdirSync(projectDir)
+      .filter((file) => file.startsWith(today) && file.endsWith('.md'))
+      .sort();
 
-    if (existsSync(todoFile)) {
-      try {
-        const content = readFileSync(todoFile, 'utf-8');
-        if (content.trim()) {
-          todosMap.set(project, content);
+    if (files.length > 0) {
+      const contents: string[] = [];
+      for (const file of files) {
+        try {
+          const content = readFileSync(join(projectDir, file), 'utf-8');
+          if (content.trim()) {
+            contents.push(content);
+          }
+        } catch (error) {
+          console.error(`⚠️ Failed to read ${file}:`, error);
         }
-      } catch (error) {
-        console.error(`⚠️ Failed to read ${todoFile}:`, error);
+      }
+      if (contents.length > 0) {
+        todosMap.set(project, contents);
       }
     }
   }
@@ -297,11 +306,36 @@ Không có tasks nào cho hôm nay.
 
   console.log(`📋 Found todos for ${todos.size} project(s):\n`);
 
-  for (const [project, content] of todos) {
-    console.log(`  → ${project}`);
+  for (const [project, contents] of todos) {
+    console.log(`  → ${project} (${contents.length} file(s))`);
 
-    const parsedTodos = parseTodoFile(content);
-    const message = buildMessage(project, formattedDate, parsedTodos);
+    // Merge todos from all files
+    const mergedTodos: ParsedTodos = {
+      title: '',
+      tasks: [],
+      meetings: [],
+      reminders: [],
+      blockers: [],
+      notes: [],
+      deadline: [],
+    };
+
+    for (const content of contents) {
+      const parsed = parseTodoFile(content);
+      if (!mergedTodos.title && parsed.title) {
+        mergedTodos.title = parsed.title;
+      }
+      mergedTodos.tasks.push(...parsed.tasks);
+      mergedTodos.meetings.push(...parsed.meetings);
+      mergedTodos.reminders.push(...parsed.reminders);
+      mergedTodos.blockers.push(...parsed.blockers);
+      mergedTodos.notes.push(...parsed.notes);
+      if (parsed.deadline.length > 0 && mergedTodos.deadline.length === 0) {
+        mergedTodos.deadline = parsed.deadline;
+      }
+    }
+
+    const message = buildMessage(project, formattedDate, mergedTodos);
 
     const success = await sendTelegramMessage(message);
 

@@ -107,7 +107,8 @@ function formatListItem(item: string): string {
 function buildMessage(
   project: string,
   date: string,
-  todos: ParsedTodos
+  todos: ParsedTodos,
+  shortIds: string[] = []
 ): string {
   const sections: string[] = [];
 
@@ -176,6 +177,13 @@ function buildMessage(
     sections.push('💪 Good luck!');
   }
 
+  // Short IDs for /check-todos
+  if (shortIds.length > 0) {
+    sections.push('');
+    const ids = shortIds.map((id) => `<code>#${id}</code>`).join(' ');
+    sections.push(`📎 Review: /check-todos ${ids}`);
+  }
+
   return sections.join('\n');
 }
 
@@ -223,11 +231,16 @@ async function sendTelegramMessage(text: string): Promise<boolean> {
   }
 }
 
+interface TodoFiles {
+  files: string[];
+  contents: string[];
+}
+
 function findTodosForToday(
   projectsDir: string,
   today: string
-): Map<string, string[]> {
-  const todosMap = new Map<string, string[]>();
+): Map<string, TodoFiles> {
+  const todosMap = new Map<string, TodoFiles>();
 
   if (!existsSync(projectsDir)) {
     console.log('📁 Projects directory not found');
@@ -246,18 +259,21 @@ function findTodosForToday(
 
     if (files.length > 0) {
       const contents: string[] = [];
+      const fileNames: string[] = [];
+
       for (const file of files) {
         try {
           const content = readFileSync(join(projectDir, file), 'utf-8');
           if (content.trim()) {
             contents.push(content);
+            fileNames.push(file);
           }
         } catch (error) {
           console.error(`⚠️ Failed to read ${file}:`, error);
         }
       }
       if (contents.length > 0) {
-        todosMap.set(project, contents);
+        todosMap.set(project, { files: fileNames, contents });
       }
     }
   }
@@ -306,8 +322,14 @@ Không có tasks nào cho hôm nay.
 
   console.log(`📋 Found todos for ${todos.size} project(s):\n`);
 
-  for (const [project, contents] of todos) {
-    console.log(`  → ${project} (${contents.length} file(s))`);
+  for (const [project, todoFiles] of todos) {
+    console.log(`  → ${project} (${todoFiles.files.length} file(s))`);
+
+    // Extract short IDs from filenames (e.g., "2025-12-19-e90e.md" → "e90e")
+    const shortIds = todoFiles.files.map((filename) => {
+      const match = filename.match(/-([a-z0-9]+)\.md$/);
+      return match ? match[1] : '';
+    }).filter(Boolean);
 
     // Merge todos from all files
     const mergedTodos: ParsedTodos = {
@@ -320,7 +342,7 @@ Không có tasks nào cho hôm nay.
       deadline: [],
     };
 
-    for (const content of contents) {
+    for (const content of todoFiles.contents) {
       const parsed = parseTodoFile(content);
       if (!mergedTodos.title && parsed.title) {
         mergedTodos.title = parsed.title;
@@ -335,7 +357,7 @@ Không có tasks nào cho hôm nay.
       }
     }
 
-    const message = buildMessage(project, formattedDate, mergedTodos);
+    const message = buildMessage(project, formattedDate, mergedTodos, shortIds);
 
     const success = await sendTelegramMessage(message);
 

@@ -2,26 +2,26 @@ Analyze the current project and generate todos for tomorrow.
 
 **Arguments:** $ARGUMENTS
 
-- Nếu `$ARGUMENTS` chứa `--send` hoặc `send`: Sau khi tạo todos, gửi luôn qua Telegram
-- Mặc định: Chỉ tạo todos, không gửi
+- If `$ARGUMENTS` contains `--send` or `send`: Send to Telegram immediately after creating todos
+- Default: Only create todos, no sending
 
 ## Instructions
 
-1. **Gather context** từ project hiện tại:
+1. **Gather context** from current project:
    - Check for open issues (if GitHub repo): `gh issue list --state open --limit 10`
    - Recent commits (7 days): `git log --oneline --since="7 days ago"`
    - TODO/FIXME comments: search for `TODO:`, `FIXME:`, `HACK:` in code
    - Check for failing tests if test command exists
    - Look at package.json scripts for common tasks
 
-2. **Generate todos** với format sau:
+2. **Generate todos** with this format:
 
 ```markdown
 # Tasks - {project-name}
 
 ## Tasks
-- Review PR #123 từ team backend
-- Fix bug login timeout
+- Review PR #123 from backend team
+- Fix login timeout bug
 - Deploy staging environment
 
 ## Meetings
@@ -29,52 +29,52 @@ Analyze the current project and generate todos for tomorrow.
 - Sprint review 4pm
 
 ## Reminders
-- Sync với team design sau standup
-- Check email từ client
+- Sync with design team after standup
+- Check client email
 
 ## Blockers
-- Waiting for API docs từ backend team
+- Waiting for API docs from backend team
 
 ## Notes
-- Backend API ready lúc 2pm
+- Backend API ready at 2pm
 
 ## Deadline
-- Cần xong trước 5pm nhé
+- Complete by 5pm today!
 ```
 
 **Format rules:**
-- Tasks: `- Task description` (không cần giờ)
+- Tasks: `- Task description` (no time needed)
 - Meetings: `- Meeting name + time`
-- Deadline: 1 dòng chung cho tất cả tasks
-- Bỏ section nếu không có nội dung
+- Deadline: Single line for all tasks
+- Skip section if no content
 
 3. **Save file**:
    - Path: `~/Documents/Development/Automations/daily-todos/projects/{project-name}/{YYYY-MM-DD}.md`
    - Date = **tomorrow** (not today)
    - Create project folder if not exists
 
-4. **Git operations** trong daily-todos repo:
+4. **Git operations** in daily-todos repo:
    - `cd ~/Documents/Development/Automations/daily-todos`
    - `git add .`
    - `git commit -m "Add todos for {project} - {date}"`
    - `git push`
 
-5. **Confirm** với user:
-   - Hiển thị nội dung todos đã tạo
-   - Show đường dẫn file
-   - Confirm đã push lên GitHub
+5. **Confirm** with user:
+   - Show todos content
+   - Show file path
+   - Confirm pushed to GitHub
 
-6. **Send Telegram** (nếu có argument `--send` hoặc `send`):
-   - Copy file vừa tạo sang file ngày hôm nay (để script đọc được)
-   - Chạy: `source ~/Documents/Development/Automations/daily-todos/.env && TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID pnpm --dir ~/Documents/Development/Automations/daily-todos send`
-   - Xóa file copy tạm
-   - Confirm đã gửi Telegram
+6. **Send Telegram** (if argument `--send` or `send` provided):
+   - Copy created file to today's date (so script can read it)
+   - Run: `source ~/Documents/Development/Automations/daily-todos/.env && TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID pnpm --dir ~/Documents/Development/Automations/daily-todos send`
+   - Delete temp copy file
+   - Confirm sent to Telegram
 
 ## Important Notes
 
-- Dùng tên folder của project hiện tại làm project name
+- Use current project folder name as project name
 - Date format: YYYY-MM-DD (e.g., 2024-01-15)
-- Tasks nên specific, actionable
-- Mỗi task nên hoàn thành được trong 1 ngày
-- Ưu tiên: bugs > features > refactoring
-- Deadline realistic, dựa trên complexity của task
+- Tasks should be specific, actionable
+- Each task should be completable in 1 day
+- Priority: bugs > features > refactoring
+- Deadline should be realistic based on task complexity
